@@ -1,4 +1,4 @@
-# Original GlobalLocalOddballs stimulus generation code
+# GlobalLocalOddballs stimulus generation code
 
 This repository contains the original code used to generate the stimuli for the **GlobalLocalOddballs project**, an [Allen Institute for Brain Science](https://alleninstitute.org/what-we-do/brain-science/) [OpenScope](https://alleninstitute.org/what-we-do/brain-science/news-press/press-releases/openscope-first-shared-observatory-neuroscience) project.
 &nbsp;
