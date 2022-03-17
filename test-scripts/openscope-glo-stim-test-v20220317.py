@@ -22,39 +22,39 @@ from psychopy.tools.attributetools import attributeSetter, setAttribute
 
 import numpy as np
 
-SESSION_PARAMS  = {'type': 'hab', # type of session (hab or ephys)
-                  'seed': 1,
-                  'habituation_duration': 15, # expected total session duration (sec)
-                  'glo_duration': 30, # expected total session duration (sec)
-                  'control_duration': 20, # expected total session duration (sec)
-                  'pre_blank': 1, # blank before stim starts (sec)
-                  'post_blank': 1, # blank after all stims end (sec)
-                  'stimulus_orientations': [45, 135],
-                  'stimulus_drift_rate': 4.0,
-                  'stimulus_spatial_freq': 0.04,
-                  'stimulus_duration': 0.5,
-                  'stimulus_contrast': 0.75,
-                  'interstimulus_duration': 0.5, # blank between all stims (sec)
-                  'global_oddball_proportion': 0.5, # duration of gabor block (sec)
-                  }
+SESSION_PARAMS  = { 'type': 'hab', # type of session (hab or ephys)
+                    'seed': 1,
+                    'habituation_duration': 60 * 0.25, # expected total session duration (sec)
+                    'glo_duration': 60 * 0.75, # expected total session duration (sec)
+                    'control_duration': 60 * 0.5, # expected total session duration (sec)
+                    'pre_blank': 1, # blank before stim starts (sec)
+                    'post_blank': 1, # blank after all stims end (sec)
+                    'stimulus_orientations': [45, 135],
+                    'stimulus_drift_rate': 4.0, #4.0,
+                    'stimulus_spatial_freq': 0.04,
+                    'stimulus_duration': 0.5,
+                    'stimulus_contrast': 0.75,
+                    'interstimulus_duration': 0.5, # blank between all stims (sec)
+                    'global_oddball_proportion': 0.5, # duration of gabor block (sec)
+                    }
 
-RIG_PARAMS     = {}
+RIG_PARAMS      = {}
 
 """
-RIG_PARAMS     = { 'syncpulse': True,
-                 'syncpulseport': 1,
-                 'syncpulselines': [4, 7],  # frame, start/stop
-                 'trigger_delay_sec': 0.0,
-                 'bgcolor': (-1,-1,-1),
-                 'eyetracker': False,
-                 'eyetrackerip': "W7DT12722",
-                 'eyetrackerport': 1000,
-                 'syncsqr': True,
-                 'syncsqrloc': (0,0),
-                 'syncsqrfreq': 60,
-                 'syncsqrsize': (100,100),
-                 'showmouse': True
-                 }
+RIG_PARAMS       = { 'syncpulse': True,
+                     'syncpulseport': 1,
+                     'syncpulselines': [4, 7],  # frame, start/stop
+                     'trigger_delay_sec': 0.0,
+                     'bgcolor': (-1,-1,-1),
+                     'eyetracker': False,
+                     'eyetrackerip': "W7DT12722",
+                     'eyetrackerport': 1000,
+                     'syncsqr': True,
+                     'syncsqrloc': (0,0),
+                     'syncsqrfreq': 60,
+                     'syncsqrsize': (100,100),
+                     'showmouse': True
+                     }
 """
 
 def winVar(win, units):
@@ -191,10 +191,11 @@ if __name__ == "__main__":
     local_oddball_count         = glo_trial_count - int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
     global_oddball_count        = int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
 
+    print('')
     print('%%%%% TASK SEQUENCE INFORMATION %%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('')
-    print('Total time                  : ' + str(total_time_calc))
+    print('Total time (min)            : ' + str(total_time_calc / 60))
     print('Habituation trial count     : ' + str(habituation_trial_count))
     print('Total GLO trial count       : ' + str(glo_trial_count))
     print('Local oddball trial count   : ' + str(local_oddball_count))
@@ -202,6 +203,7 @@ if __name__ == "__main__":
     print('Control trial count         : ' + str(control_trial_count))
     print('')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+    print('')
 
     # Create the habituation block
     SESSION_PARAMS['habituation_sequence']    = generate_sequence(SESSION_PARAMS, SESSION_PARAMS['habituation_duration'], 0, False)
