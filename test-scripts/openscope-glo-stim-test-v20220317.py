@@ -131,9 +131,9 @@ def generate_sequence(session_params, duration, global_oddball_proportion, is_co
 
 def init_sequence(window, session_params, sequence):
 
-        contrasts           = np.zeros((1,np.size(sequence))) + session_params['stimulus_contrast']
+        contrasts           = np.zeros((np.size(sequence))) + session_params['stimulus_contrast']
         blank_presentation  = np.arange(4, np.size(sequence), 5)
-        for i in blank_presentation
+        for i in blank_presentation:
             contrasts[i]    = 0
 
         phases              = session_params['rng'].choice(session_params['stimulus_phase'],
