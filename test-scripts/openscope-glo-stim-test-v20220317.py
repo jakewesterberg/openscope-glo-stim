@@ -153,7 +153,7 @@ def init_sequence(window, session_params, sequence):
                                         sf                  = 0.1,
                                         ),
                                         sweep_params        = { 'contrast':     ([contrasts], 0),
-                                                                'phase':        ([phases], 1),
+                                                                #'phase':        ([phases], 1),
                                                                 'tf':           ([session_params['stimulus_drift_rate']], 2),
                                                                 'sf':           ([session_params['stimulus_spatial_freq']], 3),
                                                                 'ori':          ([sequence], 4),
