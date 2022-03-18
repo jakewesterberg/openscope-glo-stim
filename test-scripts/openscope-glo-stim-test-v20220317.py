@@ -1,5 +1,12 @@
 """
 
+Title:          GlobalLocalOddballs (GLO) stimulus generation code
+Author:         Jacob A. Westerberg (Vanderbilt University)
+Contact:        jacob.a.westerberg@vanderbilt.edu
+Git Repo:       openscope-glo-stim (westerberg-science)
+Written:        2022-03-16
+Updated:        2022-03-17
+
 """
 
 import Tkinter as tk
@@ -22,38 +29,39 @@ from psychopy.tools.attributetools import attributeSetter, setAttribute
 
 import numpy as np
 
-SESSION_PARAMS  = { 'type': 'hab', # type of session (hab or ephys)
-                    'seed': 1,
-                    'habituation_duration': 60 * 0.25, # expected total session duration (sec)
-                    'glo_duration': 60 * 0.75, # expected total session duration (sec)
-                    'control_duration': 60 * 0.5, # expected total session duration (sec)
-                    'pre_blank': 1, # blank before stim starts (sec)
-                    'post_blank': 1, # blank after all stims end (sec)
-                    'stimulus_orientations': [45, 135],
-                    'stimulus_drift_rate': 4.0, #4.0,
-                    'stimulus_spatial_freq': 0.04,
-                    'stimulus_duration': 0.5,
-                    'stimulus_contrast': 0.75,
-                    'interstimulus_duration': 0.5, # blank between all stims (sec)
-                    'global_oddball_proportion': 0.5, # duration of gabor block (sec)
+SESSION_PARAMS  = { 'type':                         'habituation',          # type of session (habituation or electrophysiology)
+                    'seed':                         1,                      # seed to use for rng
+                    'habituation_duration':         60 * 0.25,              # desired habituation block duration (sec)
+                    'glo_duration':                 60 * 0,                 # desired GLO block duration (sec)
+                    'control_duration':             60 * 0,                 # desired control block duration (sec)
+                    'pre_blank':                    1,                      # blank before stim starts (sec)
+                    'post_blank':                   1,                      # blank after all stims end (sec)
+                    'stimulus_orientations':        [45, 135],              # two orientations
+                    'stimulus_drift_rate':          4.0,                    # stimulus drift rate (0 for static)
+                    'stimulus_spatial_freq':        0.004,                   # spatial frequency of grating
+                    'stimulus_duration':            0.5,                    # stimulus presentation duration (sec)
+                    'stimulus_contrast':            0.75,                   # stimulus contrast (0-1)
+                    'stimulus_phase':               [0.0, 0.25, 0.5, 1],    # possible phases for gratings (0-1)
+                    'interstimulus_duration':       0.5,                    # blank between all stims (sec)
+                    'global_oddball_proportion':    0.5,                    # proportion of global oddball trials in GLO block (0-1)
                     }
 
 RIG_PARAMS      = {}
 
 """
-RIG_PARAMS       = { 'syncpulse': True,
-                     'syncpulseport': 1,
-                     'syncpulselines': [4, 7],  # frame, start/stop
-                     'trigger_delay_sec': 0.0,
-                     'bgcolor': (-1,-1,-1),
-                     'eyetracker': False,
-                     'eyetrackerip': "W7DT12722",
-                     'eyetrackerport': 1000,
-                     'syncsqr': True,
-                     'syncsqrloc': (0,0),
-                     'syncsqrfreq': 60,
-                     'syncsqrsize': (100,100),
-                     'showmouse': True
+RIG_PARAMS       = { 'syncpulse':                   True,
+                     'syncpulseport':               1,
+                     'syncpulselines':              [4, 7],  # frame, start/stop
+                     'trigger_delay_sec':           0.0,
+                     'bgcolor':                     (-1,-1,-1),
+                     'eyetracker':                  False,
+                     'eyetrackerip':                "W7DT12722",
+                     'eyetrackerport':              1000,
+                     'syncsqr':                     True,
+                     'syncsqrloc':                  (0,0),
+                     'syncsqrfreq':                 60,
+                     'syncsqrsize':                 (100,100),
+                     'showmouse':                   True
                      }
 """
 
@@ -99,25 +107,43 @@ def generate_sequence(session_params, duration, global_oddball_proportion, is_co
         o2              = session_params['stimulus_orientations'][0]
 
     if is_control:
-        trial_vector    = [o1, o1, o1, o1]
+        trial_vector    = [o1, o1, o1, o1, o1]
         sequence        = np.squeeze(np.tile(trial_vector, (1, sequence_count)))
-        rints           = session_params['rng'].choice(np.arange(0, np.size(sequence)-1, 1), size=np.round(np.size(sequence)/2), replace=False)
+        rints           = session_params['rng'].choice(np.arange(0, np.size(sequence)-1, 1),
+                                                                    size=np.round(np.size(sequence)/2),
+                                                                    replace=False)
         for i in rints:
             sequence[i] = o2
 
     else:
-        trial_vector    = [o1, o1, o1, o2]
+        trial_vector    = [o1, o1, o1, o2, o1]
         sequence        = np.squeeze(np.tile(trial_vector, (1, sequence_count)))
 
         if global_oddball_proportion > 0:
             global_oddball_count    = int(np.round(sequence_count * global_oddball_proportion))
-            rints                   = np.multiply(session_params['rng'].choice(np.arange(1, sequence_count, 1), size=global_oddball_count, replace=False), 4)
+            rints                   = np.multiply(session_params['rng'].choice(np.arange(1, sequence_count, 1),
+                                                    size = global_oddball_count,
+                                                    replace = False), 5)
             for i in rints:
-                sequence[i-1] = o1
+                sequence[i-2] = o1
 
     return sequence
 
 def init_sequence(window, session_params, sequence):
+
+        contrasts           = np.zeros((1,np.size(sequence))) + session_params['stimulus_contrast']
+        blank_presentation  = np.arange(4, np.size(sequence), 5)
+        for i in blank_presentation
+            contrasts[i]    = 0
+
+        phases              = session_params['rng'].choice(session_params['stimulus_phase'],
+                                                            size = np.size(sequence),
+                                                            replace = True)
+
+        print(phases)
+        print(contrasts)
+        print(sequence)
+
         gratings            = Stimulus(visual.GratingStim(window,
                                         pos                 = (0, 0),
                                         units               = 'deg',
@@ -126,15 +152,16 @@ def init_sequence(window, session_params, sequence):
                                         texRes              = 256,
                                         sf                  = 0.1,
                                         ),
-                                        sweep_params        = {'Contrast': ([session_params['stimulus_contrast']], 0),
-                                                                'TF': ([session_params['stimulus_drift_rate']], 1),
-                                                                'SF': ([session_params['stimulus_spatial_freq']], 2),
-                                                                'Ori': (sequence, 3),
-                                                                },
+                                        sweep_params        = { 'Contrast':     ([contrasts], 0),
+                                                                'Phase':        ([phases], 1),
+                                                                'TF':           ([session_params['stimulus_drift_rate']], 2),
+                                                                'SF':           ([session_params['stimulus_spatial_freq']], 3),
+                                                                'Ori':          ([sequence], 4),
+                                                                 },
                                         sweep_length        = session_params['stimulus_duration'],
                                         start_time          = 0.0,
                                         blank_length        = session_params['interstimulus_duration'],
-                                        blank_sweeps        = 4,
+                                        blank_sweeps        = 0,
                                         runs                = 1,
                                         shuffle             = False,
                                         save_sweep_table    = True,
@@ -182,7 +209,6 @@ if __name__ == "__main__":
 
     # Create rng
     SESSION_PARAMS['rng'] = np.random.RandomState(SESSION_PARAMS['seed'])
-
 
     total_time_calc             = SESSION_PARAMS['habituation_duration'] + SESSION_PARAMS['glo_duration'] + SESSION_PARAMS['control_duration']
     habituation_trial_count     = int(np.floor(SESSION_PARAMS['habituation_duration'] / ( 5 * SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration'])))
