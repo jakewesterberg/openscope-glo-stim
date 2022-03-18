@@ -4,8 +4,8 @@ Title:          GlobalLocalOddballs (GLO) stimulus generation code
 Author:         Jacob A. Westerberg (Vanderbilt University)
 Contact:        jacob.a.westerberg@vanderbilt.edu
 Git Repo:       openscope-glo-stim (westerberg-science)
-Written:        2022-03-16
-Updated:        2022-03-18
+Written:        2022-03-18
+Updated:
 
 """
 
@@ -41,7 +41,7 @@ SESSION_PARAMS  = { 'type':                         'habituation',          # ty
                     'stimulus_spatial_freq':        0.04,                   # spatial frequency of grating
                     'stimulus_duration':            0.5,                    # stimulus presentation duration (sec)
                     'stimulus_contrast':            0.75,                   # stimulus contrast (0-1)
-                    'stimulus_phase':               0.0,    # possible phases for gratings (0-1)
+                    'stimulus_phase':               [0.0, 0.25, 0.5, 1],    # possible phases for gratings (0-1)
                     'interstimulus_duration':       0.5,                    # blank between all stims (sec)
                     'global_oddball_proportion':    0.5,                    # proportion of global oddball trials in GLO block (0-1)
                     }
@@ -127,11 +127,26 @@ def generate_sequence(session_params, duration, global_oddball_proportion, is_co
             for i in rints:
                 sequence[i-2] = o1
 
+    # randomize stim phase from params
+    phases              = np.squeeze(session_params['rng'].choice(session_params['stimulus_phase'],
+                                                        size = np.size(sequence),
+                                                        replace = True))
+
+    # randomize stim phase from params
+    contrasts           = np.squeeze(session_params['rng'].choice(session_params['stimulus_contrast'],
+                                                        size = np.size(sequence),
+                                                        replace = True))
+
+    # randomize stim phase from params
+    TFs                 = np.squeeze(session_params['rng'].choice(session_params['stimulus_drift_rate'],
+                                                        size = np.size(sequence),
+                                                        replace = True))
+
     return sequence
 
-def init_sequence(window, session_params, sequence):
+def init_grating(window, session_params, sequence):
 
-        gratings            = Stimulus(visual.GratingStim(window,
+        grating            = Stimulus(visual.GratingStim(window,
                                         pos                 = (0, 0),
                                         units               = 'deg',
                                         size                = (500, 500),
@@ -139,10 +154,11 @@ def init_sequence(window, session_params, sequence):
                                         texRes              = 256,
                                         sf                  = 0.1,
                                         ),
-                                        sweep_params        = { 'Contrast': ([session_params['stimulus_contrast']], 0),
-                                                                'TF': ([session_params['stimulus_drift_rate']], 1),
-                                                                'SF': ([session_params['stimulus_spatial_freq']], 2),
-                                                                'Ori': (sequence, 3),
+                                        sweep_params        = { 'Contrast': (???????, 0),
+                                                                'Phase': (???????, 1),
+                                                                'TF': (????????, 2),
+                                                                'SF': (????????, 3),
+                                                                'Ori': (????????, 4),
                                                                  },
                                         sweep_length        = session_params['stimulus_duration'],
                                         start_time          = 0.0,
@@ -153,7 +169,7 @@ def init_sequence(window, session_params, sequence):
                                         save_sweep_table    = True,
                                         )
 
-        return gratings
+        return grating
 
 if __name__ == "__main__":
 
