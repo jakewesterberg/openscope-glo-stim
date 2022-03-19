@@ -32,11 +32,11 @@ import numpy as np
 SESSION_PARAMS  = { 'subject_id':                   'test',                 # subject identifier information
                     'session_id':                   'test',                 # session identifier information
                     'cohort':                       1,                      # which orientation cohort (1, 2)
-                    'habituation_duration':         60 * 5,                 # desired habituation block duration (sec)
-                    'glo_duration':                 60 * 0,                 # desired GLO block duration (sec)
-                    'control_duration':             60 * 0,                 # desired control block duration (sec)
-                    'pre_blank':                    1,                      # blank before stim starts (sec)
-                    'post_blank':                   1,                      # blank after all stims end (sec)
+                    'habituation_duration':         60 * 4.2,               # desired habituation block duration (sec)
+                    'glo_duration':                 60 * 98.0,              # desired GLO block duration (sec)
+                    'control_duration':             60 * 16.7,              # desired control block duration (sec)
+                    'pre_blank':                    30.0,                   # blank before stim starts (sec)
+                    'post_blank':                   30.0,                   # blank after all stims end (sec)
                     'stimulus_orientations':        [135, 45],              # two orientations
                     'stimulus_drift_rate':          4.0,                    # stimulus drift rate (0 for static)
                     'stimulus_spatial_freq':        0.04,                   # spatial frequency of grating
@@ -282,7 +282,7 @@ if __name__ == "__main__":
                                                                                         SESSION_PARAMS['habituation_duration'],
                                                                                         0,
                                                                                         False)
-    
+
     # add global oddball and control blocks if an ephys session
     if SESSION_PARAMS['glo_duration'] > 0:
 

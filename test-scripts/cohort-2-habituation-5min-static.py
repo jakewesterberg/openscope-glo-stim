@@ -282,7 +282,7 @@ if __name__ == "__main__":
                                                                                         SESSION_PARAMS['habituation_duration'],
                                                                                         0,
                                                                                         False)
-    print in_session_time
+    
     # add global oddball and control blocks if an ephys session
     if SESSION_PARAMS['glo_duration'] > 0:
 
@@ -301,7 +301,7 @@ if __name__ == "__main__":
                                                                                         SESSION_PARAMS['control_duration'],
                                                                                         0,
                                                                                         True)
-    print in_session_time
+
     ss          = SweepStim(window,
                             stimuli         = SESSION_PARAMS['gratings'],
                             pre_blank_sec   = SESSION_PARAMS['pre_blank'],
