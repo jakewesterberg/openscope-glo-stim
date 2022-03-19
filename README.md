@@ -33,7 +33,8 @@ The experiment details, analyses, and results are forthcoming.
 &nbsp;
 
 ## Scripts  
-information forthcoming
+You can try out a test script by navigating into the test-scripts folder and running any of the example files. e.g.:
+    `python cohort-1-habituation-5min-drifting.py`
 &nbsp;
 
 ## Log files
