@@ -3,7 +3,7 @@
 This repository contains the original code used to generate the stimuli for the **GlobalLocalOddballs project**, an [Allen Institute for Brain Science](https://alleninstitute.org/what-we-do/brain-science/) [OpenScope](https://alleninstitute.org/what-we-do/brain-science/news-press/press-releases/openscope-first-shared-observatory-neuroscience) project.
 &nbsp;
 
-The GlobalLocalOddballs experiment was conceptualized by [Jake Westerberg](http://www.westerberg.science/) (Vanderbilt University), [Andr/'e Bastos](https://www.bastoslabvu.com/) (Vanderbilt University), and [Alex Maier](http://www.maierlab.com/) (Vanderbilt University). The stimuli were coded by [Jake Westerberg].
+The GlobalLocalOddballs experiment was conceptualized by [Jake Westerberg](http://www.westerberg.science/) (Vanderbilt University), [André Bastos](https://www.bastoslabvu.com/) (Vanderbilt University), and [Alex Maier](http://www.maierlab.com/) (Vanderbilt University). The stimuli were coded by [Jake Westerberg].
 
 The experiment details, analyses, and results are forthcoming.
 &nbsp;
