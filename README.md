@@ -33,8 +33,7 @@ The experiment details, analyses, and results are forthcoming.
 &nbsp;
 
 ## Scripts  
-You can try out a test script by navigating into the test-scripts folder and running any of the example files.
-    `python cohort-1-habituation-5min-drifting.py`
+You can try out a test script by navigating into the test-scripts folder and running any of the example file: `python cohort-1-habituation-5min-drifting.py`
 &nbsp;
 
 ## Log files
