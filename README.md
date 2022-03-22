@@ -41,3 +41,7 @@ You can try out a test script by navigating into the test-scripts folder and run
 - Sweep parameters are under a few keys of `['stimuli'][n]`, where `n` is the stimulus number.
 - Stimulus parameters are in the following dictionary: `['stimuli'][0]['stimParams']` or `['stimuli'][0]['stim_params']`.  
 &nbsp;
+
+## Additional notes
+- On some computers, the black screen that should intervene each sequence appears as a white screen instead. Change the color_inversion value to `True` in the SESSION_PARAMS at the top of the .py file to fix.
+&nbsp;
