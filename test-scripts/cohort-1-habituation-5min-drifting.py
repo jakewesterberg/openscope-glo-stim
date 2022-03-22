@@ -5,7 +5,7 @@ Author:         Jacob A. Westerberg (Vanderbilt University)
 Contact:        jacob.a.westerberg@vanderbilt.edu
 Git Repo:       openscope-glo-stim (westerberg-science)
 Written:        2022-03-18
-Updated:        2022-03-19
+Updated:        2022-03-22
 
 """
 
@@ -35,8 +35,8 @@ SESSION_PARAMS  = { 'subject_id':                   'test',                 # su
                     'habituation_duration':         60 * 5,                 # desired habituation block duration (sec)
                     'glo_duration':                 60 * 0,                 # desired GLO block duration (sec)
                     'control_duration':             60 * 0,                 # desired control block duration (sec)
-                    'pre_blank':                    1,                      # blank before stim starts (sec)
-                    'post_blank':                   1,                      # blank after all stims end (sec)
+                    'pre_blank':                    5,                      # blank before stim starts (sec)
+                    'post_blank':                   5,                      # blank after all stims end (sec)
                     'stimulus_orientations':        [135, 45],              # two orientations
                     'stimulus_drift_rate':          4.0,                    # stimulus drift rate (0 for static)
                     'stimulus_spatial_freq':        0.04,                   # spatial frequency of grating
@@ -45,6 +45,7 @@ SESSION_PARAMS  = { 'subject_id':                   'test',                 # su
                     'stimulus_phase':               [0.0, 0.25, 0.5, 0.75], # possible phases for gratings (0-1)
                     'interstimulus_duration':       0.5,                    # blank between all stims (sec)
                     'global_oddball_proportion':    0.2,                    # proportion of global oddball trials in GLO block (0-1)
+                    'color_inversion':              False,
                     }
 
 RIG_PARAMS      = {}
@@ -156,7 +157,7 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
             sequence['orientations'][i] = o2
 
     else:
-        trial_vector                    = [o1, o1, o1, o2, o1]
+        trial_vector                    = [o1, o1, o1, o1, o2]
         sequence['orientations']        = np.squeeze(np.tile(trial_vector, (1, sequence_count)))
 
         if global_oddball_proportion > 0:
@@ -165,10 +166,10 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
                                                     size = global_oddball_count,
                                                     replace = False), 5)
             for i in rints:
-                sequence['orientations'][i-2] = o1
+                sequence['orientations'][i-1] = o1
 
     # Insert blank 'presentations'
-    sequence['blanks']              = np.squeeze(np.tile([False, False, False, False, True], (1, sequence_count)))
+    sequence['blanks']              = np.squeeze(np.tile([True, False, False, False, False], (1, sequence_count)))
 
     # randomize stim phase from params
     if np.size(session_params['stimulus_phase']) == 1:
@@ -207,7 +208,12 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
 
         if sequence['blanks'][i] == True:
 
-            gratings.append(init_grating(window, session_params, -1, 0, 0, 0, 0,))
+            if session_params['color_inversion'] == True:
+                blank_color     = 1
+            else:
+                blank_color     = -1
+
+            gratings.append(init_grating(window, session_params, blank_color, 0, 0, 0, 0,))
 
         else:
 
@@ -301,7 +307,7 @@ if __name__ == "__main__":
                                                                                         SESSION_PARAMS['control_duration'],
                                                                                         0,
                                                                                         True)
-    
+
     ss          = SweepStim(window,
                             stimuli         = SESSION_PARAMS['gratings'],
                             pre_blank_sec   = SESSION_PARAMS['pre_blank'],
