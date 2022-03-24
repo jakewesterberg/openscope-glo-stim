@@ -34,7 +34,8 @@ SESSION_PARAMS  = { 'subject_id':                   'test',                 # su
                     'cohort':                       2,                      # which orientation cohort (1, 2)
                     'habituation_duration':         60 * 60,                # desired habituation block duration (sec)
                     'glo_duration':                 60 * 0,                 # desired GLO block duration (sec)
-                    'control_duration':             60 * 0,                 # desired control block duration (sec)
+                    'randomized_control_duration':  60 * 0,                 # desired radomized control block duration (sec)
+                    'sequenced_control_duration':   60 * 0,                 # desired sequenced control block duration (sec)
                     'pre_blank':                    5,                      # blank before stim starts (sec)
                     'post_blank':                   5,                      # blank after all stims end (sec)
                     'stimulus_orientations':        [135, 45],              # two orientations
@@ -122,7 +123,7 @@ def init_grating(window, session_params, contrast, phase, tf, sf, ori):
 
         return grating
 
-def generate_sequence(window, session_params, in_session_time, stimulus_counter, duration, global_oddball_proportion, is_control):
+def generate_sequence(window, session_params, in_session_time, stimulus_counter, duration, global_oddball_proportion, is_control, type_control):
 
     sequence = {}
 
@@ -148,13 +149,25 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
         o2              = session_params['stimulus_orientations'][0]
 
     if is_control:
-        trial_vector    = [o1, o1, o1, o1, o1]
-        sequence['orientations']        = np.squeeze(np.tile(trial_vector, (1, sequence_count)))
-        rints                           = session_params['rng'].choice(np.arange(0, sequence['stimulus_count'] - 1, 1),
+
+        trial_vector                = [o1, o1, o1, o1, o1]
+        sequence['orientations']    = np.squeeze(np.tile(trial_vector, (1, sequence_count)))
+
+        if type_control == 'randomized':
+            rints                   = session_params['rng'].choice(np.arange(0, sequence['stimulus_count'], 1),
                                                                                 size = sequence['stimulus_count'] / 2,
                                                                                 replace = False)
-        for i in rints:
-            sequence['orientations'][i] = o2
+            for i in rints:
+                sequence['orientations'][i] = o2
+
+        elif type_control == 'sequenced':
+            t_ctr = 0
+            for i in np.arange(0, sequence['stimulus_count'], 1):
+                t_ctr = t_ctr + 1
+                if (t_ctr % 10) > 5 or t_ctr == 10:
+                    sequence['orientations'][i] = o2
+                    if t_ctr == 10:
+                        t_ctr = 0
 
     else:
         trial_vector                    = [o1, o1, o1, o1, o2]
@@ -259,12 +272,13 @@ if __name__ == "__main__":
     # SESSION_PARAMS['seed'] = # override by setting seed manually
     SESSION_PARAMS['rng'] = np.random.RandomState(SESSION_PARAMS['seed'])
 
-    total_time_calc             = SESSION_PARAMS['habituation_duration'] + SESSION_PARAMS['glo_duration'] + SESSION_PARAMS['control_duration']
-    habituation_trial_count     = int(np.floor(SESSION_PARAMS['habituation_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
-    glo_trial_count             = int(np.floor(SESSION_PARAMS['glo_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
-    control_trial_count         = int(np.floor(SESSION_PARAMS['control_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
-    local_oddball_count         = glo_trial_count - int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
-    global_oddball_count        = int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
+    total_time_calc              = SESSION_PARAMS['habituation_duration'] + SESSION_PARAMS['glo_duration'] + SESSION_PARAMS['randomized_control_duration'] + SESSION_PARAMS['sequenced_control_duration']
+    habituation_trial_count      = int(np.floor(SESSION_PARAMS['habituation_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
+    glo_trial_count              = int(np.floor(SESSION_PARAMS['glo_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
+    random_control_trial_count   = int(np.floor(SESSION_PARAMS['randomized_control_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
+    sequence_control_trial_count = int(np.floor(SESSION_PARAMS['sequenced_control_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
+    local_oddball_count          = glo_trial_count - int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
+    global_oddball_count         = int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
 
     print('')
     print('%%%%% TASK SEQUENCE INFORMATION %%%%%')
@@ -275,7 +289,8 @@ if __name__ == "__main__":
     print('Total GLO trial count       : ' + str(glo_trial_count))
     print('Local oddball trial count   : ' + str(local_oddball_count))
     print('Global oddball trial count  : ' + str(global_oddball_count))
-    print('Control trial count         : ' + str(control_trial_count))
+    print('Random control trial count  : ' + str(random_control_trial_count))
+    print('Sequence control trial count: ' + str(sequence_control_trial_count))
     print('')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('')
@@ -287,6 +302,7 @@ if __name__ == "__main__":
                                                                                         stimulus_counter,
                                                                                         SESSION_PARAMS['habituation_duration'],
                                                                                         0,
+                                                                                        False,
                                                                                         False)
 
     # add global oddball and control blocks if an ephys session
@@ -298,15 +314,26 @@ if __name__ == "__main__":
                                                                                         stimulus_counter,
                                                                                         SESSION_PARAMS['glo_duration'],
                                                                                         SESSION_PARAMS['global_oddball_proportion'],
+                                                                                        False,
                                                                                         False)
 
         SESSION_PARAMS['gratings'], in_session_time, stimulus_counter    = generate_sequence(window,
                                                                                         SESSION_PARAMS,
                                                                                         in_session_time,
                                                                                         stimulus_counter,
-                                                                                        SESSION_PARAMS['control_duration'],
+                                                                                        SESSION_PARAMS['randomized_control_duration'],
                                                                                         0,
-                                                                                        True)
+                                                                                        True,
+                                                                                        'randomized')
+
+        SESSION_PARAMS['gratings'], in_session_time, stimulus_counter    = generate_sequence(window,
+                                                                                        SESSION_PARAMS,
+                                                                                        in_session_time,
+                                                                                        stimulus_counter,
+                                                                                        SESSION_PARAMS['sequenced_control_duration'],
+                                                                                        0,
+                                                                                        True,
+                                                                                        'sequenced')
 
     ss          = SweepStim(window,
                             stimuli         = SESSION_PARAMS['gratings'],
