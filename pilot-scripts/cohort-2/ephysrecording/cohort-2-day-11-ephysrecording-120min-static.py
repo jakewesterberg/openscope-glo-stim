@@ -35,7 +35,7 @@ SESSION_PARAMS  = { 'subject_id':                   'test',                 # su
                     'habituation_duration':         60 * 4.20,              # desired habituation block duration (sec)
                     'glo_duration':                 60 * 89.6,              # desired GLO block duration (sec)
                     'randomized_control_duration':  60 * 16.7,              # desired radomized control block duration (sec)
-                    'sequenced_control_duration':   60 * 8.20,              # desired sequenced control block duration (sec)
+                    'sequenced_control_duration':   60 * 8.40,              # desired sequenced control block duration (sec)
                     'pre_blank':                    10,                     # blank before stim starts (sec)
                     'post_blank':                   10,                     # blank after all stims end (sec)
                     'stimulus_orientations':        [135, 45],              # two orientations
