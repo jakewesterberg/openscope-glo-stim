@@ -33,8 +33,8 @@ SESSION_PARAMS  = { 'subject_id':                   'test',                 # su
                     'session_id':                   'test',                 # session identifier information
                     'cohort':                       1,                      # which orientation cohort (1, 2)
                     'habituation_duration':         60 * 4.20,              # desired habituation block duration (sec)
-                    'glo_duration':                 60 * 83.4,              # desired GLO block duration (sec)
-                    'randomized_control_duration':  60 * 21.0,              # desired radomized control block duration (sec)
+                    'glo_duration':                 60 * 79.2,              # desired GLO block duration (sec)
+                    'randomized_control_duration':  60 * 25.2,              # desired radomized control block duration (sec)
                     'sequenced_control_duration':   60 * 8.40,              # desired sequenced control block duration (sec)
                     'pre_blank':                    10,                     # blank before stim starts (sec)
                     'post_blank':                   10,                     # blank after all stims end (sec)
