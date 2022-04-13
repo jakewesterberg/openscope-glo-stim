@@ -38,7 +38,6 @@ import yaml
 from copy import deepcopy
 from camstim.misc import get_config
 from camstim.zro import agent
-import zro
 from uuid import uuid4
 
 def run_optotagging(levels, conditions, waveforms, isis, sampleRate = 10000.):
@@ -101,7 +100,7 @@ def generatePulseTrain(pulseWidth, pulseInterval, numRepeats, riseTime, sampleRa
         
     return data
 
-def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28, 1.345]):
+def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28, 1.345], output_dir = 'C:/ProgramData/camstim/output/'):
 
     sampleRate = 10000
 
@@ -186,7 +185,7 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
         opto_isis = [1]*len(opto_conditions)
     # 
 
-    outputDirectory = 'C:/ProgramData/camstim/output/'
+    outputDirectory = output_dir
     fileDate = str(datetime.datetime.now()).replace(':', '').replace(
         '.', '').replace('-', '').replace(' ', '')[2:14]
     fileName = outputDirectory + fileDate + '_'+mouse_id + '.opto.pkl'
@@ -207,118 +206,6 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
     # 
     run_optotagging(opto_levels, opto_conditions,
                     waveforms, opto_isis, float(sampleRate))
-    # create waveforms
-
-    sampleRate = 10000
-    
-    # 1 s cosine ramp:
-    data_cosine = (((1 - np.cos(np.arange(sampleRate, dtype=np.float64)*2*np.pi/sampleRate)) + 1) - 1)/2 #create raised cosine waveform
-    
-    # 1 ms cosine ramp:
-    rise_and_fall = (((1 - np.cos(np.arange(sampleRate*0.001, dtype=np.float64)*2*np.pi/10))+1)-1)/2
-    half_length = rise_and_fall.size / 2
-    
-    # pulses with cosine ramp:
-    pulse_2ms = np.concatenate((rise_and_fall[:half_length], np.ones((int(sampleRate*0.001),)), rise_and_fall[half_length:]))
-    pulse_5ms = np.concatenate((rise_and_fall[:half_length], np.ones((int(sampleRate*0.004),)), rise_and_fall[half_length:]))
-    pulse_10ms = np.concatenate((rise_and_fall[:half_length], np.ones((int(sampleRate*0.009),)), rise_and_fall[half_length:]))
-    
-    data_2ms_10Hz = np.zeros((sampleRate,), dtype=np.float64)
-    
-    for i in range(0,10):
-        interval = sampleRate / 10
-        data_2ms_10Hz[i*interval:i*interval+pulse_2ms.size] = pulse_2ms 
-        
-    data_5ms = np.zeros((sampleRate,), dtype=np.float64)
-    data_5ms[:pulse_5ms.size] = pulse_5ms
-        
-    data_10ms = np.zeros((sampleRate,), dtype=np.float64)
-    data_10ms[:pulse_10ms.size] = pulse_10ms
-    
-    data_10s = np.zeros((sampleRate*10,), dtype=np.float64)
-    data_10s[:-2] = 1
-    
-    # for experiment
-    
-    isi = 1.5
-    isi_rand = 0.5
-    numRepeats = 25
-
-    level_list = [0.6375, 0.7375, 0.82]
-    condition_list = [0, 1, 2, 3]
-    waveforms = [data_2ms_10Hz, data_5ms, data_10ms, data_cosine]
-    
-    opto_levels = np.array(level_list*numRepeats*len(condition_list)) #     BLUE
-    opto_conditions = range(0,len(condition_list))*numRepeats*len(level_list)
-    opto_conditions = np.sort(opto_conditions)
-    opto_isis = np.random.random(opto_levels.shape) * isi_rand + isi
-    
-    p = np.random.permutation(len(opto_levels))
-    
-    # implement shuffle?
-    opto_levels = opto_levels[p]
-    opto_conditions = opto_conditions[p]
-    
-    # for testing
-    
-    if test_levels:
-        isi = 2.0
-        isi_rand = 0.0
-
-        numRepeats = 5
-        level_list = [0.6375, 0.7375, 0.82]
-
-        condition_list = [0, 0]
-        waveforms = [data_10s, data_10s]
-        
-        opto_levels = np.array(level_list*numRepeats*len(condition_list)) #     BLUE
-        opto_conditions = range(0,len(condition_list))*numRepeats*len(level_list)
-        opto_conditions = np.sort(opto_conditions)
-        opto_isis = np.random.random(opto_levels.shape) * isi_rand + isi
-    
-    outputDirectory = r'C:\Users\svc_neuropix\camstim\output'
-    fileDate = str(datetime.datetime.now()).replace(':','').replace('.','').replace('-','').replace(' ','')[2:14]
-    fileName = fileDate + mouse_id + '.opto.pkl'
-    
-    print('saving info to: ' + fileName)
-    fl = open(fileName,'wb')
-    output = {}
-    
-    output['opto_levels'] = opto_levels
-    output['opto_conditions'] = opto_conditions
-    output['opto_ISIs'] = opto_isis
-    output['opto_waveforms'] = waveforms
-    
-    pkl.dump(output,fl)
-    fl.close()
-    print('saved.')
-    # 
-    run_optotagging(opto_levels, opto_conditions, waveforms, opto_isis, float(sampleRate))
-
-def infer_from_agent(socket_addr):
-    try:
-        p = zro.Proxy(socket_addr)
-    except:
-        pass
-
-    try:
-        inferred_session_id = p.session_uuid
-    except:
-        inferred_session_id = None
-
-    if (inferred_session_id):
-        session_id = {
-            'value': inferred_session_id,
-            'inferred': True,
-        }
-    else:
-        session_id = {
-            'value': uuid4().hex,
-            'inferred': False,
-        }
-        
-    return session_id
-
 """ 
 end of optotagging section
 """
@@ -622,9 +509,7 @@ if __name__ == "__main__":
 
     stimulus = json_params['stimulus']
     # end of mtrain part
-    
-    [foraging_id, inferred_output_dir] = infer_from_agent("127.0.0.1:5000")
-    
+        
     dist = 15.0
     wid = 52.0
 
@@ -736,50 +621,23 @@ if __name__ == "__main__":
     # run it
     ss.run()
     
-    
     opto_enabled = not json_params.get('disable_opto', False)
     if opto_enabled:
-        optotagging_output_path = os.path.join(
-            output_dir,
-            'optotagging-{script_id}-{mouse_id}.pkl'.format(
-                script_id=foraging_id['value'],
-                mouse_id=json_params["mouse_id"],
-            )
-        )
         
-        # optotagging bundle
-        opto_bundle_dir = os.path.join(root_dir, 'optotagging', )
-        os.mkdir(opto_bundle_dir)
-
         opto_params = deepcopy(json_params.get("opto_params"))
         opto_params["mouse_id"] = json_params["mouse_id"]
-
+        opto_params["output_dir"] = agent.OUTPUT_DIR
         #Read opto levels from stim.cfg file
         default_levels  = [1.0, 1.2, 1.3] #TODO what should these be?
-        config_path = r'C:/ProgramData/camstim/config/stim.cfg'
+        config_path = agent.CONFIG_PATH
         try:
             stim_cfg_opto_params = get_config(
-                        'Optogenetics',
-                        path=config_path,
-                    )
+                'Optogenetics',
+                path=config_path,
+            )
             opto_params["level_list"] = stim_cfg_opto_params["level_list"]
-
         except:
             opto_params["level_list"] = default_levels
 
         optotagging(**opto_params)
         
-        opto_init_path = generate_camstim_script_bundle(
-            optotagging_script,
-            opto_params,
-            root_dir=opto_bundle_dir,
-            output_path=optotagging_output_path,
-        )
-                
-        opto_exit_code = run_script_bundle(
-            opto_init_path,
-        )
-
-        if opto_exit_code > 0:
-            raise ValueError(
-                'Non-success return for replay script process: %s' % opto_exit_code)
