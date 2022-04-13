@@ -628,16 +628,12 @@ if __name__ == "__main__":
         opto_params["mouse_id"] = json_params["mouse_id"]
         opto_params["output_dir"] = agent.OUTPUT_DIR
         #Read opto levels from stim.cfg file
-        default_levels  = [1.0, 1.2, 1.3] #TODO what should these be?
         config_path = agent.CONFIG_PATH
-        try:
-            stim_cfg_opto_params = get_config(
-                'Optogenetics',
-                path=config_path,
-            )
-            opto_params["level_list"] = stim_cfg_opto_params["level_list"]
-        except:
-            opto_params["level_list"] = default_levels
+        stim_cfg_opto_params = get_config(
+            'Optogenetics',
+            path=config_path,
+        )
+        opto_params["level_list"] = stim_cfg_opto_params["level_list"]
 
         optotagging(**opto_params)
         
