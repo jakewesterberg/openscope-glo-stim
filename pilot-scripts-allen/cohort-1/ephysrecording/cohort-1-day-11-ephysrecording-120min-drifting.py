@@ -38,7 +38,6 @@ import yaml
 from copy import deepcopy
 from camstim.misc import get_config
 from camstim.zro import agent
-from uuid import uuid4
 
 def run_optotagging(levels, conditions, waveforms, isis, sampleRate = 10000.):
     
