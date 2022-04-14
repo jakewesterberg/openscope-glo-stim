@@ -220,12 +220,9 @@ if __name__ == "__main__":
     with open(args.json_path, 'r') as f:
         # we use the yaml package here because the json package loads as unicode, which prevents using the keys as parameters later
         json_params = yaml.load(f)
-
-    stimulus = json_params['stimulus']
-    # end of mtrain part
     
-    opto_enabled = not json_params.get('disable_opto', False)
-    if opto_enabled:
+    opto_disabled = not json_params.get('disable_opto', True)
+    if not(opto_disabled):
         
         opto_params = deepcopy(json_params.get("opto_params"))
         opto_params["mouse_id"] = json_params["mouse_id"]
