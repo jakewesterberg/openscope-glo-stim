@@ -20,14 +20,7 @@ runs optotagging code for ecephys pipeline experiments
 by joshs@alleninstitute.org, corbettb@alleninstitute.org, chrism@alleninstitute.org, jeromel@alleninstitute.org
 
 (c) 2018 Allen Institute for Brain Science
-"""
-try:
-    import Tkinter as tk
-    import tkMessageBox as messagebox  # py2
-except ImportError:
-    import tkinter as tk
-    from tkinter import messagebox
-    
+"""    
 from toolbox.IO.nidaq import AnalogOutput
 from toolbox.IO.nidaq import DigitalOutput
 import datetime
@@ -231,20 +224,6 @@ SESSION_PARAMS  = { 'subject_id':                   'test',                 # su
                     'intermission_color':           -1,                     # in the event white screen appear instead of black set '1'
                     }
 
-RIG_PARAMS       = { 'syncpulse':                   True,
-                     'syncpulseport':               1,
-                     'syncpulselines':              [4, 7],  # frame, start/stop
-                     'trigger_delay_sec':           0.0,
-                     'bgcolor':                     (-1,-1,-1),
-                     'eyetracker':                  False,
-                     'eyetrackerip':                "W7DT12722",
-                     'eyetrackerport':              1000,
-                     'syncsqr':                     True,
-                     'syncsqrloc':                  (0,0),
-                     'syncsqrfreq':                 60,
-                     'syncsqrsize':                 (100,100),
-                     'showmouse':                   True
-                     }
 
 def winVar(win, units):
     """Returns width and height of the window in units as tuple.
@@ -604,15 +583,15 @@ if __name__ == "__main__":
                             stimuli         = SESSION_PARAMS['gratings'],
                             pre_blank_sec   = SESSION_PARAMS['pre_blank'],
                             post_blank_sec  = SESSION_PARAMS['post_blank'],
-                            params          = RIG_PARAMS,  # will be set by MPE to work on the rig
+                            params          = {},  # will be set by MPE to work on the rig
                             )
 
     # add in foraging so we can track wheel, potentially give rewards, etc
     f = Foraging(window       = window,
                                 auto_update = False,
-                                params      = RIG_PARAMS,
-                                nidaq_tasks = {'digital_input': ss.di, 'digital_output': ss.do,},
+                                params      = {}
                                 )
+    
     ss.add_item(f, "foraging")
 
     # run it
