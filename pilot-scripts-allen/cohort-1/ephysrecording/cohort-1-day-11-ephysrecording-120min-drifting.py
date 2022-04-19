@@ -582,13 +582,6 @@ if __name__ == "__main__":
                                                                                         False,
                                                                                         False)
 
-
-    # We generate the receptive field section 
-    # 15 is the number of repeats (20min). 
-    gabors_rf_20 = create_receptive_field_mapping(15)
-    gabors_rf_20_ds = [(total_time_calc, total_time_calc+1200)]
-    gabors_rf_20.set_display_sequence(gabors_rf_20_ds)
-
     
     # add global oddball and control blocks if an ephys session
     if SESSION_PARAMS['glo_duration'] > 0:
@@ -620,8 +613,15 @@ if __name__ == "__main__":
                                                                                         True,
                                                                                         'sequenced')
 
+    # We generate the receptive field section 
+    # 15 is the number of repeats (20min). 
+    gabors_rf_20 = create_receptive_field_mapping(15)
+    gabors_rf_20_ds = [(total_time_calc, total_time_calc+1200)]
+    gabors_rf_20.set_display_sequence(gabors_rf_20_ds)
+    SESSION_PARAMS['gratings'].append(gabors_rf_20)
+    
     ss  = SweepStim(window,
-                            stimuli         = [ SESSION_PARAMS['gratings'], gabors_rf_20],
+                            stimuli         = SESSION_PARAMS['gratings'],
                             pre_blank_sec   = SESSION_PARAMS['pre_blank'],
                             post_blank_sec  = SESSION_PARAMS['post_blank'],
                             params          = {},  # will be set by MPE to work on the rig
