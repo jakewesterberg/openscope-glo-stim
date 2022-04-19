@@ -473,6 +473,39 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
 
     return gratings, in_session_time, stimulus_counter
 
+def create_receptive_field_mapping(number_runs = 15):
+    x = np.arange(-40,45,10)
+    y = np.arange(-40,45,10)
+    position = []
+    for i in x:
+        for j in y:
+            position.append([i,j])
+
+    stimulus = Stimulus(visual.GratingStim(window,
+                        units='deg',
+                        size=20,
+                        mask="circle",
+                        texRes=256,
+                        sf=0.1,
+                        ),
+        sweep_params={
+                'Pos':(position, 0),
+                'Contrast': ([0.8], 4),
+                'TF': ([4.0], 1),
+                'SF': ([0.08], 2),
+                'Ori': ([0,45,90], 3),
+                },
+        sweep_length=0.25,
+        start_time=0.0,
+        blank_length=0.0,
+        blank_sweeps=0,
+        runs=number_runs,
+        shuffle=True,
+        save_sweep_table=True,
+        )
+    
+    return stimulus
+
 if __name__ == "__main__":
     
     # This part load parameters from mtrain
@@ -549,6 +582,14 @@ if __name__ == "__main__":
                                                                                         False,
                                                                                         False)
 
+
+    # We generate the receptive field section 
+    # 15 is the number of repeats (20min). 
+    gabors_rf_20 = create_receptive_field_mapping(15)
+    gabors_rf_20_ds = [(total_time_calc, total_time_calc+1200)]
+    gabors_rf_20.set_display_sequence(gabors_rf_20_ds)
+
+    
     # add global oddball and control blocks if an ephys session
     if SESSION_PARAMS['glo_duration'] > 0:
 
@@ -580,7 +621,7 @@ if __name__ == "__main__":
                                                                                         'sequenced')
 
     ss  = SweepStim(window,
-                            stimuli         = SESSION_PARAMS['gratings'],
+                            stimuli         = [ SESSION_PARAMS['gratings'], gabors_rf_20],
                             pre_blank_sec   = SESSION_PARAMS['pre_blank'],
                             post_blank_sec  = SESSION_PARAMS['post_blank'],
                             params          = {},  # will be set by MPE to work on the rig
