@@ -228,7 +228,7 @@ if __name__ == "__main__":
         opto_params["mouse_id"] = json_params["mouse_id"]
         opto_params["output_dir"] = agent.OUTPUT_DIR
         #Read opto levels from stim.cfg file
-        config_path = agent.CONFIG_PATH
+        config_path = agent.CAMSTIM_CONFIG_PATH
         stim_cfg_opto_params = get_config(
             'Optogenetics',
             path=config_path,
