@@ -221,7 +221,7 @@ if __name__ == "__main__":
         # we use the yaml package here because the json package loads as unicode, which prevents using the keys as parameters later
         json_params = yaml.load(f)
     
-    opto_disabled = not json_params.get('disable_opto', True)
+    opto_disabled = json_params.get('disable_opto', True)
     if not(opto_disabled):
         
         opto_params = deepcopy(json_params.get("opto_params"))
