@@ -493,7 +493,6 @@ if __name__ == "__main__":
     # mtrain should be providing : 
     cohort = json_params.get('cohort', 1) 
     stimulus_drift_rate = json_params.get('stimulus_drift_rate', 4.0) 
-    habituation_time_min = json_params.get('habituation_time_min', 9.6)
 
     # Main experiment timings:
     # habituation_duration:         60 * 2.10
@@ -504,7 +503,7 @@ if __name__ == "__main__":
     SESSION_PARAMS  = { 'subject_id':                   'test',                     # subject identifier information
                         'session_id':                   'test',                     # session identifier information
                         'cohort':                       cohort,                     # which orientation cohort (1, 2)
-                        'habituation_duration':         60 * habituation_time_min,  # desired habituation block duration (sec)
+                        'habituation_duration':         60 * 2.1,  # desired habituation block duration (sec)
                         'glo_duration':                 60 * 65.0,                     # desired GLO block duration (sec)
                         'randomized_control_duration':  60 * 25.2,                     # desired radomized control block duration (sec)
                         'sequenced_control_duration':   60 * 8.40,                     # desired sequenced control block duration (sec)
