@@ -14,6 +14,7 @@ from camstim import SweepStim, Stimulus, Foraging
 from camstim import Window, Warp
 import random
 import numpy as np
+import os
 
 """
 runs optotagging code for ecephys pipeline experiments
@@ -192,7 +193,7 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
     outputDirectory = output_dir
     fileDate = str(datetime.datetime.now()).replace(':', '').replace(
         '.', '').replace('-', '').replace(' ', '')[2:14]
-    fileName = outputDirectory + fileDate + '_'+mouse_id + '.opto.pkl'
+    fileName = os.path.join(outputDirectory, fileDate + '_'+mouse_id + '.opto.pkl')
 
     print('saving info to: ' + fileName)
     fl = open(fileName, 'wb')
