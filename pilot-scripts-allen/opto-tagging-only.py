@@ -14,6 +14,7 @@ from camstim import SweepStim, Stimulus, Foraging
 from camstim import Window, Warp
 import random
 import numpy as np
+import os
 
 """
 runs optotagging code for ecephys pipeline experiments
@@ -81,7 +82,7 @@ def generatePulseTrain(pulseWidth, pulseInterval, numRepeats, riseTime, sampleRa
    # rise_samples =     
     
     rise_and_fall = (((1 - np.cos(np.arange(sampleRate*riseTime/1000., dtype=np.float64)*2*np.pi/10))+1)-1)/2
-    half_length = rise_and_fall.size / 2
+    half_length = int(rise_and_fall.size / 2)
     rise = rise_and_fall[:half_length]
     fall = rise_and_fall[half_length:]
     
@@ -110,7 +111,7 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
     # 1 ms cosine ramp:
     rise_and_fall = (
         ((1 - np.cos(np.arange(sampleRate*0.001, dtype=np.float64)*2*np.pi/10))+1)-1)/2
-    half_length = rise_and_fall.size / 2
+    half_length = int(rise_and_fall.size / 2)
 
     # pulses with cosine ramp:
     pulse_2ms = np.concatenate((rise_and_fall[:half_length], np.ones(
@@ -123,7 +124,7 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
     data_2ms_10Hz = np.zeros((sampleRate,), dtype=np.float64)
 
     for i in range(0, 10):
-        interval = sampleRate / 10
+        interval = int(sampleRate / 10)
         data_2ms_10Hz[i*interval:i*interval+pulse_2ms.size] = pulse_2ms
 
     data_5ms = np.zeros((sampleRate,), dtype=np.float64)
@@ -134,15 +135,20 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
 
     data_10s = np.zeros((sampleRate*10,), dtype=np.float64)
     data_10s[:-2] = 1
-
+    
+    ##### THESE STIMULI ADDED FOR OPENSCOPE GLO PROJECT #####
+    data_10ms_5Hz = generatePulseTrain(10, 200, 5, 1) # 1 second of 5Hz pulse train. Each pulse is 10 ms wide
+    data_6ms_40Hz = generatePulseTrain(6, 25, 40, 1)  # 1 second of 40 Hz pulse train. Each pulse is 6 ms wide
+    #########################################################
+    
     # for experiment
 
     isi = 1.5
     isi_rand = 0.5
     numRepeats = 50
 
-    condition_list = [2, 3]
-    waveforms = [data_2ms_10Hz, data_5ms, data_10ms, data_cosine]
+    condition_list = [3, 4, 5]
+    waveforms = [data_2ms_10Hz, data_5ms, data_10ms, data_cosine, data_10ms_5Hz, data_6ms_40Hz]
     
     opto_levels = np.array(level_list*numRepeats*len(condition_list)) #     BLUE
     opto_conditions = condition_list*numRepeats*len(level_list)
@@ -187,7 +193,7 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
     outputDirectory = output_dir
     fileDate = str(datetime.datetime.now()).replace(':', '').replace(
         '.', '').replace('-', '').replace(' ', '')[2:14]
-    fileName = outputDirectory + fileDate + '_'+mouse_id + '.opto.pkl'
+    fileName = os.path.join(outputDirectory, fileDate + '_'+mouse_id + '.opto.pkl')
 
     print('saving info to: ' + fileName)
     fl = open(fileName, 'wb')

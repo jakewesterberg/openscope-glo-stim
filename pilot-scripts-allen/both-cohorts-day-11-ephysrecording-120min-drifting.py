@@ -14,6 +14,7 @@ from camstim import SweepStim, Stimulus, Foraging
 from camstim import Window, Warp
 import random
 import numpy as np
+import os
 
 """
 runs optotagging code for ecephys pipeline experiments
@@ -72,7 +73,7 @@ def generatePulseTrain(pulseWidth, pulseInterval, numRepeats, riseTime, sampleRa
    # rise_samples =     
     
     rise_and_fall = (((1 - np.cos(np.arange(sampleRate*riseTime/1000., dtype=np.float64)*2*np.pi/10))+1)-1)/2
-    half_length = rise_and_fall.size / 2
+    half_length = int(rise_and_fall.size / 2)
     rise = rise_and_fall[:half_length]
     fall = rise_and_fall[half_length:]
     
@@ -101,7 +102,7 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
     # 1 ms cosine ramp:
     rise_and_fall = (
         ((1 - np.cos(np.arange(sampleRate*0.001, dtype=np.float64)*2*np.pi/10))+1)-1)/2
-    half_length = rise_and_fall.size / 2
+    half_length = int(rise_and_fall.size / 2)
 
     # pulses with cosine ramp:
     pulse_2ms = np.concatenate((rise_and_fall[:half_length], np.ones(
@@ -114,7 +115,7 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
     data_2ms_10Hz = np.zeros((sampleRate,), dtype=np.float64)
 
     for i in range(0, 10):
-        interval = sampleRate / 10
+        interval = int(sampleRate / 10)
         data_2ms_10Hz[i*interval:i*interval+pulse_2ms.size] = pulse_2ms
 
     data_5ms = np.zeros((sampleRate,), dtype=np.float64)
@@ -125,15 +126,20 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
 
     data_10s = np.zeros((sampleRate*10,), dtype=np.float64)
     data_10s[:-2] = 1
-
+    
+    ##### THESE STIMULI ADDED FOR OPENSCOPE GLO PROJECT #####
+    data_10ms_5Hz = generatePulseTrain(10, 200, 5, 1) # 1 second of 5Hz pulse train. Each pulse is 10 ms wide
+    data_6ms_40Hz = generatePulseTrain(6, 25, 40, 1)  # 1 second of 40 Hz pulse train. Each pulse is 6 ms wide
+    #########################################################
+    
     # for experiment
 
     isi = 1.5
     isi_rand = 0.5
     numRepeats = 50
 
-    condition_list = [2, 3]
-    waveforms = [data_2ms_10Hz, data_5ms, data_10ms, data_cosine]
+    condition_list = [3, 4, 5]
+    waveforms = [data_2ms_10Hz, data_5ms, data_10ms, data_cosine, data_10ms_5Hz, data_6ms_40Hz]
     
     opto_levels = np.array(level_list*numRepeats*len(condition_list)) #     BLUE
     opto_conditions = condition_list*numRepeats*len(level_list)
@@ -178,7 +184,7 @@ def optotagging(mouse_id, operation_mode='experiment', level_list = [1.15, 1.28,
     outputDirectory = output_dir
     fileDate = str(datetime.datetime.now()).replace(':', '').replace(
         '.', '').replace('-', '').replace(' ', '')[2:14]
-    fileName = outputDirectory + fileDate + '_'+mouse_id + '.opto.pkl'
+    fileName = os.path.join(outputDirectory, fileDate + '_'+mouse_id + '.opto.pkl')
 
     print('saving info to: ' + fileName)
     fl = open(fileName, 'wb')
@@ -228,7 +234,7 @@ def winVar(win, units):
 
     return fieldSize, deg_per_pix
 
-def init_grating(window, session_params, contrast, phase, tf, sf, ori, opacity):
+def init_grating(window, session_params, contrast, phase, tf, sf, ori):
 
         grating            = Stimulus(visual.GratingStim(window,
                                         pos                 = (0, 0),
@@ -242,13 +248,12 @@ def init_grating(window, session_params, contrast, phase, tf, sf, ori, opacity):
                                                                 'Phase': ([phase], 1),
                                                                 'TF': ([tf], 2),
                                                                 'SF': ([sf], 3),
-                                                                'Ori': ([ori], 4),
-                                                                'Opacity': ([opacity], 5),
+                                                                'Ori': (ori, 4),
                                                                  },
                                         sweep_length        = session_params['stimulus_duration'],
                                         start_time          = 0.0,
                                         blank_length        = session_params['interstimulus_duration'],
-                                        blank_sweeps        = 0,
+                                        blank_sweeps        = 4,
                                         runs                = 1,
                                         shuffle             = False,
                                         save_sweep_table    = True,
@@ -271,7 +276,6 @@ def init_intermission(window, session_params):
                                                                 'TF': ([0], 2),
                                                                 'SF': ([0], 3),
                                                                 'Ori': ([0], 4),
-                                                                'Opacity': ([1], 5),
                                                                  },
                                         sweep_length        = session_params['intermission_duration'],
                                         start_time          = 0.0,
@@ -292,7 +296,7 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
                                 (5 * (session_params['stimulus_duration'] +
                                 session_params['interstimulus_duration']))))
 
-    sequence['stimulus_count']  = int(sequence_count * 5)
+    sequence['stimulus_count']  = int(sequence_count * 4)
     sequence['trial_count']     = int(sequence_count)
 
     try:
@@ -320,10 +324,10 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
             prob_correction         = np.sum(patterns_prob)
             patterns_prob           = patterns_prob / prob_correction
 
-            patterns        = [ [o1, o1, o1, o1, o1],       [o1, o1, o1, o1, o2],       [o1, o1, o1, o2, o1],       [o1, o1, o1, o2, o2],
-                                [o1, o1, o2, o1, o1],       [o1, o1, o2, o2, o1],       [o1, o1, o2, o1, o2],       [o1, o1, o2, o2, o2],
-                                [o1, o2, o1, o1, o1],       [o1, o2, o2, o1, o1],       [o1, o2, o1, o2, o1],       [o1, o2, o1, o1, o2],
-                                [o1, o2, o2, o2, o1],       [o1, o2, o2, o1, o2],       [o1, o2, o1, o2, o2],       [o1, o2, o2, o2, o2], ]
+            patterns        = [ [o1, o1, o1, o1],       [o1, o1, o1, o2],       [o1, o1, o2, o1],       [o1, o1, o2, o2],
+                                [o1, o2, o1, o1],       [o1, o2, o2, o1],       [o1, o2, o1, o2],       [o1, o2, o2, o2],
+                                [o2, o1, o1, o1],       [o2, o2, o1, o1],       [o2, o1, o2, o1],       [o2, o1, o1, o2],
+                                [o2, o2, o2, o1],       [o2, o2, o1, o2],       [o2, o1, o2, o2],       [o2, o2, o2, o2], ]
 
             patterns_prez           = np.floor(patterns_prob * sequence_count)
 
@@ -339,7 +343,7 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
                     sequence['orientations'].append(temp_pattern[j])
 
             if np.size(sequence['orientations']) < sequence['stimulus_count']:
-                missing_seqs = (sequence['stimulus_count'] - np.size(sequence['orientations'])) / 5
+                missing_seqs = (sequence['stimulus_count'] - np.size(sequence['orientations'])) / 4
                 for i in np.arange(missing_seqs):
                     random_seq = int(session_params['rng'].choice(patterns_sequence, 1))
                     temp_pattern = patterns[random_seq]
@@ -348,103 +352,95 @@ def generate_sequence(window, session_params, in_session_time, stimulus_counter,
 
         elif type_control == 'sequenced':
 
-            trial_vector                = [o1, o1, o1, o1, o1]
+            trial_vector                = [o1, o1, o1, o1]
             sequence['orientations']    = np.squeeze(np.tile(trial_vector, (1, sequence_count)))
 
             t_ctr = 0
             for i in np.arange(0, sequence['stimulus_count'], 1):
                 t_ctr = t_ctr + 1
-                if (t_ctr % 10) > 5 or t_ctr == 10:
+                if (t_ctr % 8) > 4 or t_ctr == 8:
                     sequence['orientations'][i] = o2
-                    if t_ctr == 10:
+                    if t_ctr == 8:
                         t_ctr = 0
 
     else:
-        trial_vector                    = [o1, o1, o1, o1, o2]
+        trial_vector                    = [o1, o1, o1, o2]
         sequence['orientations']        = np.squeeze(np.tile(trial_vector, (1, sequence_count)))
 
         if global_oddball_proportion > 0:
             global_oddball_count    = int(np.round(sequence_count * global_oddball_proportion))
             rints                   = np.multiply(session_params['rng'].choice(np.arange(1, sequence_count, 1),
                                                     size = global_oddball_count,
-                                                    replace = False), 5)
+                                                    replace = False), 4)
             for i in rints:
                 sequence['orientations'][i-1] = o1
-
-    # Insert blank 'presentations'
-    sequence['blanks']              = np.squeeze(np.tile([True, False, False, False, False], (1, sequence_count)))
-
-    # randomize stim phase from params
-    if np.size(session_params['stimulus_phase']) == 1:
-        sequence['phases']              = np.squeeze(np.tile(session_params['stimulus_phase'], (1, sequence['stimulus_count'])))
-    else:
-        sequence['phases']              = np.squeeze(session_params['rng'].choice(session_params['stimulus_phase'],
-                                                                                size = sequence['stimulus_count'],
-                                                                                replace = True))
-
-    # randomize stim phase from params
-    if np.size(session_params['stimulus_contrast']) == 1:
-        sequence['contrasts']              = np.squeeze(np.tile(session_params['stimulus_contrast'], (1, sequence['stimulus_count'])))
-    else:
-        sequence['contrasts']           = np.squeeze(session_params['rng'].choice(session_params['stimulus_contrast'],
-                                                                                size = sequence['stimulus_count'],
-                                                                                replace = True))
-
-    # randomize stim phase from params
-    if np.size(session_params['stimulus_drift_rate']) == 1:
-        sequence['TFs']              = np.squeeze(np.tile(session_params['stimulus_drift_rate'], (1, sequence['stimulus_count'])))
-    else:
-        sequence['TFs']                 = np.squeeze(session_params['rng'].choice(session_params['stimulus_drift_rate'],
-                                                                                size = sequence['stimulus_count'],
-                                                                                replace = True))
-
-    # randomize stim phase from params
-    if np.size(session_params['stimulus_spatial_freq']) == 1:
-        sequence['SFs']              = np.squeeze(np.tile(session_params['stimulus_spatial_freq'], (1, sequence['stimulus_count'])))
-    else:
-        sequence['SFs']                 = np.squeeze(session_params['rng'].choice(session_params['stimulus_spatial_freq'],
-                                                                                size = sequence['stimulus_count'],
-                                                                                replace = True))
 
     # init intermission counts
     intermission_ctr = session_params['intermission_frequency']
 
     # generate the stimuli
-    for i in np.arange(sequence['stimulus_count']):
+    placeholder_seq = []
+    placeholder_dur = 0.0
+    for i in np.arange(sequence['stimulus_count'] ):
 
-        if sequence['blanks'][i] == True:
+        if i == np.size(np.arange(sequence['stimulus_count'])) - 1:
 
-            if intermission_ctr % (session_params['intermission_frequency']) == 0:
-                gratings.append(init_intermission(window, session_params,))
-                gratings[stimulus_counter].set_display_sequence([(in_session_time, in_session_time
-                                                                + session_params['intermission_duration'])])
-
-                in_session_time = in_session_time + session_params['intermission_duration'];
-                stimulus_counter = stimulus_counter + 1
-                intermission_ctr = 1
-
-            else:
-                intermission_ctr = intermission_ctr + 1
-
-            gratings.append(init_grating(window, session_params, sequence['contrasts'][i], 0, 0, 0, 0, 0,))
-
-        else:
+            placeholder_seq.append(sequence['orientations'][i])
+            placeholder_dur = placeholder_dur + session_params['stimulus_duration'] + session_params['interstimulus_duration']
 
             gratings.append(init_grating(window, session_params,
-                                          sequence['contrasts'][i],
-                                          sequence['phases'][i],
-                                          sequence['TFs'][i],
-                                          sequence['SFs'][i],
-                                          sequence['orientations'][i],
-                                          1.0
-                                          ))
+                                        session_params['stimulus_contrast'],
+                                        session_params['stimulus_phase'],
+                                        session_params['stimulus_drift_rate'],
+                                        session_params['stimulus_spatial_freq'],
+                                        placeholder_seq
+                                        ))
 
-        gratings[stimulus_counter].set_display_sequence([(in_session_time, in_session_time
-                                                            + session_params['stimulus_duration']
-                                                            + session_params['interstimulus_duration'])])
 
-        in_session_time = in_session_time + session_params['stimulus_duration'] + session_params['interstimulus_duration'];
-        stimulus_counter = stimulus_counter + 1
+            blank_dur  = ((np.size(placeholder_seq) / 4) * (session_params['stimulus_duration'] + session_params['interstimulus_duration']))
+            gratings[stimulus_counter].set_display_sequence([(in_session_time, in_session_time
+                                                            + placeholder_dur
+                                                            + blank_dur)])
+
+            in_session_time = in_session_time + placeholder_dur + blank_dur;
+            stimulus_counter = stimulus_counter + 1
+            placeholder_seq = []
+            placeholder_dur = 0.0
+
+        elif intermission_ctr % (session_params['intermission_frequency']) == 0:
+
+            if len(placeholder_seq) != 0:
+
+                gratings.append(init_grating(window, session_params,
+                                            session_params['stimulus_contrast'],
+                                            session_params['stimulus_phase'],
+                                            session_params['stimulus_drift_rate'],
+                                            session_params['stimulus_spatial_freq'],
+                                            placeholder_seq
+                                            ))
+
+                blank_dur  = ((np.size(placeholder_seq) / 4) * (session_params['stimulus_duration'] + session_params['interstimulus_duration']))
+                gratings[stimulus_counter].set_display_sequence([(in_session_time, in_session_time
+                                                                + placeholder_dur
+                                                                + blank_dur)])
+
+                in_session_time = in_session_time + placeholder_dur + blank_dur;
+                stimulus_counter = stimulus_counter + 1
+                placeholder_seq = []
+                placeholder_dur = 0.0
+
+            gratings.append(init_intermission(window, session_params,))
+            gratings[stimulus_counter].set_display_sequence([(in_session_time, in_session_time
+                                                                + session_params['intermission_duration'])])
+
+            in_session_time = in_session_time + session_params['intermission_duration'];
+            stimulus_counter = stimulus_counter + 1
+            intermission_ctr = 0
+
+
+        placeholder_seq.append(sequence['orientations'][i])
+        placeholder_dur = placeholder_dur + session_params['stimulus_duration'] + session_params['interstimulus_duration']
+        intermission_ctr = intermission_ctr + 1
 
     return gratings, in_session_time, stimulus_counter
 
@@ -497,36 +493,41 @@ if __name__ == "__main__":
     # mtrain should be providing : 
     cohort = json_params.get('cohort', 1) 
     stimulus_drift_rate = json_params.get('stimulus_drift_rate', 4.0) 
-    
-    SESSION_PARAMS  = { 'subject_id':                   'test',                 # subject identifier information
-                        'session_id':                   'test',                 # session identifier information
-                        'cohort':                       cohort,                      # which orientation cohort (1, 2)
-                        'habituation_duration':         60 * 4.20,              # desired habituation block duration (sec)
-                        'glo_duration':                 60 * 79.2,              # desired GLO block duration (sec)
-                        'randomized_control_duration':  60 * 25.2,              # desired radomized control block duration (sec)
-                        'sequenced_control_duration':   60 * 8.40,              # desired sequenced control block duration (sec)
-                        'pre_blank':                    10,                     # blank before stim starts (sec)
-                        'post_blank':                   10,                     # blank after all stims end (sec)
-                        'stimulus_orientations':        [135, 45],              # two orientations
-                        'stimulus_drift_rate':          stimulus_drift_rate,                    # stimulus drift rate (0 for static)
-                        'stimulus_spatial_freq':        0.04,                   # spatial frequency of grating
-                        'stimulus_duration':            0.5,                    # stimulus presentation duration (sec)
-                        'stimulus_contrast':            0.8,                    # stimulus contrast (0-1)
-                        'stimulus_phase':               [0.0, 0.25, 0.5, 0.75], # possible phases for gratings (0-1)
-                        'interstimulus_duration':       0.5,                    # blank between all stims (sec)
-                        'global_oddball_proportion':    0.2,                    # proportion of global oddball trials in GLO block (0-1)
-                        'intermission_frequency':       100,                    # number of sequences between black-blank 'intermission'
-                        'intermission_duration':        10,                     # duration of blank intermissions (sec)
-                        'intermission_color':           -1,                     # in the event white screen appear instead of black set '1'
+
+    # Main experiment timings:
+    # habituation_duration:         60 * 2.10
+    # glo_duration:                 60 * 65.0
+    # randomized_control_duration:  60 * 25.2
+    # sequenced_control_duration:   60 * 8.40
+
+    SESSION_PARAMS  = { 'subject_id':                   'test',                     # subject identifier information
+                        'session_id':                   'test',                     # session identifier information
+                        'cohort':                       cohort,                     # which orientation cohort (1, 2)
+                        'habituation_duration':         60 * 2.1,  # desired habituation block duration (sec)
+                        'glo_duration':                 60 * 65.0,                     # desired GLO block duration (sec)
+                        'randomized_control_duration':  60 * 25.2,                     # desired radomized control block duration (sec)
+                        'sequenced_control_duration':   60 * 8.40,                     # desired sequenced control block duration (sec)
+                        'pre_blank':                    5,                          # blank before stim starts (sec)
+                        'post_blank':                   5,                          # blank after all stims end (sec)
+                        'stimulus_orientations':        [135, 45],                  # two orientations
+                        'stimulus_drift_rate':          stimulus_drift_rate,        # stimulus drift rate (0 for static)
+                        'stimulus_spatial_freq':        0.04,                       # spatial frequency of grating
+                        'stimulus_duration':            0.5,                        # stimulus presentation duration (sec)
+                        'stimulus_contrast':            0.8,                        # stimulus contrast (0-1)
+                        'stimulus_phase':               [0.0, 0.25, 0.5, 0.75],     # possible phases for gratings (0-1)
+                        'interstimulus_duration':       0.5,                        # blank between all stims (sec)
+                        'global_oddball_proportion':    0.2,                        # proportion of global oddball trials in GLO block (0-1)
+                        'intermission_frequency':       100,                        # number of sequences between black-blank 'intermission'
+                        'intermission_duration':        10,                         # duration of blank intermissions (sec)
+                        'intermission_color':           -1,                         # in the event white screen appear instead of black set '1'
                         }
-  
+
     # Create display window
     window = Window(fullscr=True,
-                    monitor='Gamma1.Luminance50', 
-                    screen=1,
+                    monitor='Gamma1.Luminance50',
+                    screen=0,
                     warp=Warp.Spherical
                     )
-
 
     # Init stimulus time tracking
     in_session_time = 0
@@ -559,7 +560,7 @@ if __name__ == "__main__":
     print('%%%%% TASK SEQUENCE INFORMATION %%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('')
-    print('Total time (min)             : ' + str(total_time_calc / 60))
+    print('Main exp. total time (min)   : ' + str(total_time_calc / 60))
     print('Habituation trial count      : ' + str(habituation_trial_count))
     print('Total GLO trial count        : ' + str(glo_trial_count))
     print('Local oddball trial count    : ' + str(local_oddball_count))
@@ -581,7 +582,6 @@ if __name__ == "__main__":
                                                                                         False,
                                                                                         False)
 
-    
     # add global oddball and control blocks if an ephys session
     if SESSION_PARAMS['glo_duration'] > 0:
 
@@ -614,8 +614,8 @@ if __name__ == "__main__":
 
     # We generate the receptive field section 
     # 15 is the number of repeats (20min). 
-    gabors_rf_20 = create_receptive_field_mapping(15)
-    gabors_rf_20_ds = [(total_time_calc, total_time_calc+1200)]
+    gabors_rf_20 = create_receptive_field_mapping(8)
+    gabors_rf_20_ds = [(total_time_calc, total_time_calc+640)]
     gabors_rf_20.set_display_sequence(gabors_rf_20_ds)
     SESSION_PARAMS['gratings'].append(gabors_rf_20)
     
@@ -635,8 +635,11 @@ if __name__ == "__main__":
     ss.add_item(f, "foraging")
 
     # run it
-    ss.run()
-    
+    try: 
+        ss.run()
+    except SystemExit:
+        print("We prevent camstim exiting the script to complete optotagging")
+     
     opto_disabled = json_params.get('disable_opto', True)
     if not(opto_disabled):
         
