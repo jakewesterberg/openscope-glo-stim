@@ -503,10 +503,10 @@ if __name__ == "__main__":
     SESSION_PARAMS  = { 'subject_id':                   'test',                     # subject identifier information
                         'session_id':                   'test',                     # session identifier information
                         'cohort':                       cohort,                     # which orientation cohort (1, 2)
-                        'habituation_duration':         60 * 2.1,  # desired habituation block duration (sec)
-                        'glo_duration':                 60 * 65.0,                     # desired GLO block duration (sec)
-                        'randomized_control_duration':  60 * 25.2,                     # desired radomized control block duration (sec)
-                        'sequenced_control_duration':   60 * 8.40,                     # desired sequenced control block duration (sec)
+                        'habituation_duration':         60 * 2.1,                   # desired habituation block duration (sec)
+                        'glo_duration':                 60 * 65.0,                  # desired GLO block duration (sec)
+                        'randomized_control_duration':  60 * 25.2,                  # desired radomized control block duration (sec)
+                        'sequenced_control_duration':   60 * 8.40,                  # desired sequenced control block duration (sec)
                         'pre_blank':                    5,                          # blank before stim starts (sec)
                         'post_blank':                   5,                          # blank after all stims end (sec)
                         'stimulus_orientations':        [135, 45],                  # two orientations
@@ -514,7 +514,7 @@ if __name__ == "__main__":
                         'stimulus_spatial_freq':        0.04,                       # spatial frequency of grating
                         'stimulus_duration':            0.5,                        # stimulus presentation duration (sec)
                         'stimulus_contrast':            0.8,                        # stimulus contrast (0-1)
-                        'stimulus_phase':               [0.0, 0.25, 0.5, 0.75],     # possible phases for gratings (0-1)
+                        'stimulus_phase':               0.0,                        # possible phases for gratings (0-1)
                         'interstimulus_duration':       0.5,                        # blank between all stims (sec)
                         'global_oddball_proportion':    0.2,                        # proportion of global oddball trials in GLO block (0-1)
                         'intermission_frequency':       100,                        # number of sequences between black-blank 'intermission'
