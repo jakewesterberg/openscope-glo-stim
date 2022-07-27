@@ -1,11 +1,11 @@
 """
 
-Title:          GlobalLocalOddballs (GLO) stimulus generation code
+Title:          GlobalLocalOddballs (GLO) stimulus generation code (ALTERNATIVE)
 Author:         Jacob A. Westerberg (Vanderbilt University)
 Contact:        jacob.a.westerberg@vanderbilt.edu
 Git Repo:       openscope-glo-stim (westerberg-science)
-Written:        2022-03-24
-Updated:        2022-04-19 (Jerome Lecoq)
+Written:        2022-07-18
+Updated:
 
 """
 import camstim
@@ -258,7 +258,6 @@ def init_grating(window, session_params, contrast, phase, tf, sf, ori):
                                         shuffle             = False,
                                         save_sweep_table    = True,
                                         )
-        grating.stim_path = r"C:\\not_a_stim_script\\init_grating.stim"
 
         return grating
 
@@ -286,8 +285,6 @@ def init_intermission(window, session_params):
                                         shuffle             = False,
                                         save_sweep_table    = True,
                                         )
-        grating.stim_path = r"C:\\not_a_stim_script\\init_intermission.stim"
-
 
         return grating
 
@@ -477,7 +474,6 @@ def create_receptive_field_mapping(number_runs = 15):
         shuffle=True,
         save_sweep_table=True,
         )
-    stimulus.stim_path = r"C:\\not_a_stim_script\\create_receptive_field_mapping.stim"
 
     return stimulus
 
@@ -498,19 +494,14 @@ if __name__ == "__main__":
     cohort = json_params.get('cohort', 1)
     stimulus_drift_rate = json_params.get('stimulus_drift_rate', 4.0)
 
-    # Main experiment timings:
-    # habituation_duration:         60 * 2.10
-    # glo_duration:                 60 * 65.0
-    # randomized_control_duration:  60 * 25.2
-    # sequenced_control_duration:   60 * 8.40
-
     SESSION_PARAMS  = { 'subject_id':                   'test',                     # subject identifier information
                         'session_id':                   'test',                     # session identifier information
                         'cohort':                       cohort,                     # which orientation cohort (1, 2)
                         'habituation_duration':         60 * 2.1,                   # desired habituation block duration (sec)
-                        'glo_duration':                 60 * 65.0,                  # desired GLO block duration (sec)
+                        'glo_duration_1':               60 * 40.0,                  # desired GLO block duration before controls (sec)
                         'randomized_control_duration':  60 * 25.2,                  # desired radomized control block duration (sec)
                         'sequenced_control_duration':   60 * 8.40,                  # desired sequenced control block duration (sec)
+                        'glo_duration_2':               60 * 20.0,                  # desired GLO block duration after controls (sec)
                         'pre_blank':                    5,                          # blank before stim starts (sec)
                         'post_blank':                   5,                          # blank after all stims end (sec)
                         'stimulus_orientations':        [135, 45],                  # two orientations
@@ -542,19 +533,21 @@ if __name__ == "__main__":
     # SESSION_PARAMS['seed'] = # override by setting seed manually
     SESSION_PARAMS['rng'] = np.random.RandomState(SESSION_PARAMS['seed'])
 
-    total_time_calc              = SESSION_PARAMS['habituation_duration'] + SESSION_PARAMS['glo_duration'] + SESSION_PARAMS['randomized_control_duration'] + SESSION_PARAMS['sequenced_control_duration']
+    total_time_calc              = SESSION_PARAMS['habituation_duration'] + SESSION_PARAMS['glo_1_duration'] + SESSION_PARAMS['randomized_control_duration'] + SESSION_PARAMS['sequenced_control_duration'] + SESSION_PARAMS['glo_2_duration']
     habituation_trial_count      = int(np.floor(SESSION_PARAMS['habituation_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
-    glo_trial_count              = int(np.floor(SESSION_PARAMS['glo_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
+    glo_1_trial_count            = int(np.floor(SESSION_PARAMS['glo_duration_1'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
     random_control_trial_count   = int(np.floor(SESSION_PARAMS['randomized_control_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
     sequence_control_trial_count = int(np.floor(SESSION_PARAMS['sequenced_control_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
+    glo_2_trial_count            = int(np.floor(SESSION_PARAMS['glo_duration_2'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
     local_oddball_count          = glo_trial_count - int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
     global_oddball_count         = int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
 
     # compute number of intermissions
     total_intermissions         = int((np.floor(habituation_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['habituation_duration'] > 0.0)) +
-                                  (np.floor(glo_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration'] > 0.0)) +
+                                  (np.floor(glo_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_1'] > 0.0)) +
                                   (np.floor(random_control_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['randomized_control_duration'] > 0.0)) +
-                                  (np.floor(sequence_control_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['sequenced_control_duration'] > 0.0)))
+                                  (np.floor(sequence_control_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['sequenced_control_duration'] > 0.0))) +
+                                  (np.floor(glo_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_2'] > 0.0))
     total_intermissions_time    = total_intermissions * SESSION_PARAMS['intermission_duration']
 
     # recompute total time
@@ -566,7 +559,7 @@ if __name__ == "__main__":
     print('')
     print('Main exp. total time (min)   : ' + str(total_time_calc / 60))
     print('Habituation trial count      : ' + str(habituation_trial_count))
-    print('Total GLO trial count        : ' + str(glo_trial_count))
+    print('Total GLO trial count        : ' + str(glo_1_trial_count + glo_2_trial_count))
     print('Local oddball trial count    : ' + str(local_oddball_count))
     print('Global oddball trial count   : ' + str(global_oddball_count))
     print('Random control trial count   : ' + str(random_control_trial_count))
@@ -587,13 +580,13 @@ if __name__ == "__main__":
                                                                                         False)
 
     # add global oddball and control blocks if an ephys session
-    if SESSION_PARAMS['glo_duration'] > 0:
+    if SESSION_PARAMS['glo_duration_1'] > 0:
 
         SESSION_PARAMS['gratings'], in_session_time, stimulus_counter    = generate_sequence(window,
                                                                                         SESSION_PARAMS,
                                                                                         in_session_time,
                                                                                         stimulus_counter,
-                                                                                        SESSION_PARAMS['glo_duration'],
+                                                                                        SESSION_PARAMS['glo_duration_1'],
                                                                                         SESSION_PARAMS['global_oddball_proportion'],
                                                                                         False,
                                                                                         False)
@@ -616,6 +609,15 @@ if __name__ == "__main__":
                                                                                         True,
                                                                                         'sequenced')
 
+        SESSION_PARAMS['gratings'], in_session_time, stimulus_counter    = generate_sequence(window,
+                                                                                        SESSION_PARAMS,
+                                                                                        in_session_time,
+                                                                                        stimulus_counter,
+                                                                                        SESSION_PARAMS['glo_duration_2'],
+                                                                                        SESSION_PARAMS['global_oddball_proportion'],
+                                                                                        False,
+                                                                                        False)
+
     # We generate the receptive field section
     # 15 is the number of repeats (20min).
     gabors_rf_20 = create_receptive_field_mapping(8)
@@ -635,7 +637,7 @@ if __name__ == "__main__":
                                 auto_update = False,
                                 params      = {}
                                 )
-    
+
     ss.add_item(f, "foraging")
 
     # run it
