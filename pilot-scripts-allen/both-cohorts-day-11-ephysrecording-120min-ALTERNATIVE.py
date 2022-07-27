@@ -258,6 +258,7 @@ def init_grating(window, session_params, contrast, phase, tf, sf, ori):
                                         shuffle             = False,
                                         save_sweep_table    = True,
                                         )
+        grating.stim_path = r"C:\\not_a_stim_script\\init_grating.stim"
 
         return grating
 
@@ -285,6 +286,7 @@ def init_intermission(window, session_params):
                                         shuffle             = False,
                                         save_sweep_table    = True,
                                         )
+        grating.stim_path = r"C:\\not_a_stim_script\\init_intermission.stim"
 
         return grating
 
@@ -474,6 +476,7 @@ def create_receptive_field_mapping(number_runs = 15):
         shuffle=True,
         save_sweep_table=True,
         )
+    stimulus.stim_path = r"C:\\not_a_stim_script\\create_receptive_field_mapping.stim"
 
     return stimulus
 
@@ -546,8 +549,8 @@ if __name__ == "__main__":
     total_intermissions         = int((np.floor(habituation_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['habituation_duration'] > 0.0)) +
                                   (np.floor(glo_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_1'] > 0.0)) +
                                   (np.floor(random_control_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['randomized_control_duration'] > 0.0)) +
-                                  (np.floor(sequence_control_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['sequenced_control_duration'] > 0.0))) +
-                                  (np.floor(glo_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_2'] > 0.0))
+                                  (np.floor(sequence_control_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['sequenced_control_duration'] > 0.0)) +
+                                  (np.floor(glo_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_2'] > 0.0)))
     total_intermissions_time    = total_intermissions * SESSION_PARAMS['intermission_duration']
 
     # recompute total time
