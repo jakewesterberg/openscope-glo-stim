@@ -542,15 +542,15 @@ if __name__ == "__main__":
     random_control_trial_count   = int(np.floor(SESSION_PARAMS['randomized_control_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
     sequence_control_trial_count = int(np.floor(SESSION_PARAMS['sequenced_control_duration'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
     glo_2_trial_count            = int(np.floor(SESSION_PARAMS['glo_duration_2'] / ( 5 * (SESSION_PARAMS['stimulus_duration'] + SESSION_PARAMS['interstimulus_duration']))))
-    local_oddball_count          = glo_trial_count - int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
-    global_oddball_count         = int(np.round(glo_trial_count * SESSION_PARAMS['global_oddball_proportion']))
+    local_oddball_count          = (glo_1_trial_count+glo_2_trial_count) - int(np.round((glo_1_trial_count+glo_2_trial_count) * SESSION_PARAMS['global_oddball_proportion']))
+    global_oddball_count         = int(np.round((glo_1_trial_count+glo_2_trial_count) * SESSION_PARAMS['global_oddball_proportion']))
 
     # compute number of intermissions
     total_intermissions         = int((np.floor(habituation_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['habituation_duration'] > 0.0)) +
-                                  (np.floor(glo_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_1'] > 0.0)) +
+                                  (np.floor(glo_1_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_1'] > 0.0)) +
                                   (np.floor(random_control_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['randomized_control_duration'] > 0.0)) +
                                   (np.floor(sequence_control_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['sequenced_control_duration'] > 0.0)) +
-                                  (np.floor(glo_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_2'] > 0.0)))
+                                  (np.floor(glo_2_trial_count / SESSION_PARAMS['intermission_frequency']) + (SESSION_PARAMS['glo_duration_2'] > 0.0)))
     total_intermissions_time    = total_intermissions * SESSION_PARAMS['intermission_duration']
 
     # recompute total time
